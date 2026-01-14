@@ -1,0 +1,71 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '../constants/theme';
+
+// Screens
+import AdminDashboard from '../screens/admin/Dashboard';
+import StaffListScreen from '../screens/admin/StaffListScreen';
+import AttendanceScreen from '../screens/admin/AttendanceScreen';
+import LeaveApprovalsScreen from '../screens/admin/LeaveApprovalsScreen';
+import ReportsScreen from '../screens/admin/ReportsScreen';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const AdminNavigator = () => {
+    return (
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+
+                    switch (route.name) {
+                        case 'Dashboard':
+                            iconName = focused ? 'grid' : 'grid-outline';
+                            break;
+                        case 'Staff':
+                            iconName = focused ? 'people' : 'people-outline';
+                            break;
+                        case 'Attendance':
+                            iconName = focused ? 'finger-print' : 'finger-print-outline';
+                            break;
+                        case 'Leaves':
+                            iconName = focused ? 'calendar' : 'calendar-outline';
+                            break;
+                        case 'Reports':
+                            iconName = focused ? 'bar-chart' : 'bar-chart-outline';
+                            break;
+                        default:
+                            iconName = 'ellipse-outline';
+                    }
+
+                    return <Ionicons name={iconName} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: Colors.adminAccent,
+                tabBarInactiveTintColor: Colors.outline,
+                tabBarStyle: {
+                    backgroundColor: Colors.surface,
+                    borderTopColor: Colors.outlineVariant,
+                    paddingBottom: 8,
+                    paddingTop: 8,
+                    height: 60,
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '500',
+                },
+            })}
+        >
+            <Tab.Screen name="Dashboard" component={AdminDashboard} />
+            <Tab.Screen name="Staff" component={StaffListScreen} />
+            <Tab.Screen name="Attendance" component={AttendanceScreen} />
+            <Tab.Screen name="Leaves" component={LeaveApprovalsScreen} />
+            <Tab.Screen name="Reports" component={ReportsScreen} />
+        </Tab.Navigator>
+    );
+};
+
+export default AdminNavigator;
