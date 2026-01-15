@@ -1,5 +1,6 @@
 // Firebase Firestore Database Service
 import { firestore } from '../config/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     collection,
     doc,
@@ -15,6 +16,8 @@ import {
     Timestamp,
 } from 'firebase/firestore';
 
+const USER_STORAGE_KEY = '@attendance_user';
+
 // Collection names
 const COLLECTIONS = {
     STORES: 'stores',
@@ -23,6 +26,7 @@ const COLLECTIONS = {
     ATTENDANCE: 'attendance',
     LEAVE_REQUESTS: 'leaveRequests',
     SALARY_RECORDS: 'salaryRecords',
+    DEVICE_REQUESTS: 'deviceRequests',
     SETTINGS: 'settings',
 };
 
@@ -347,6 +351,16 @@ export const leaveRequests = {
         return docsToArray(snapshot);
     },
 
+    async getPendingByStoreId(storeId) {
+        const q = query(
+            collection(firestore, COLLECTIONS.LEAVE_REQUESTS),
+            where('storeId', '==', storeId),
+            where('status', '==', 'pending')
+        );
+        const snapshot = await getDocs(q);
+        return docsToArray(snapshot);
+    },
+
     async add(request) {
         const docRef = doc(firestore, COLLECTIONS.LEAVE_REQUESTS, request.id);
         await setDoc(docRef, {
@@ -410,6 +424,42 @@ export const salaryRecords = {
     },
 };
 
+// ============ DEVICE REQUESTS ============
+export const deviceRequests = {
+    async getAll() {
+        const snapshot = await getDocs(collection(firestore, COLLECTIONS.DEVICE_REQUESTS));
+        return docsToArray(snapshot);
+    },
+
+    async getPending() {
+        const q = query(
+            collection(firestore, COLLECTIONS.DEVICE_REQUESTS),
+            where('status', '==', 'pending')
+        );
+        const snapshot = await getDocs(q);
+        return docsToArray(snapshot);
+    },
+
+    async add(request) {
+        const docRef = doc(firestore, COLLECTIONS.DEVICE_REQUESTS, request.id);
+        await setDoc(docRef, {
+            ...request,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+        return request;
+    },
+
+    async update(id, updates) {
+        const docRef = doc(firestore, COLLECTIONS.DEVICE_REQUESTS, id);
+        await updateDoc(docRef, {
+            ...updates,
+            updatedAt: Timestamp.now(),
+        });
+        return { id, ...updates };
+    },
+};
+
 // ============ SETTINGS ============
 export const settings = {
     async get(key) {
@@ -430,6 +480,35 @@ export const settings = {
     },
 };
 
+// ============ LOCAL USER SESSION (AsyncStorage, not Firestore) ============
+export const user = {
+    async get() {
+        try {
+            const data = await AsyncStorage.getItem(USER_STORAGE_KEY);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Error getting user:', error);
+            return null;
+        }
+    },
+
+    async set(userData) {
+        try {
+            await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+        } catch (error) {
+            console.error('Error setting user:', error);
+        }
+    },
+
+    async clear() {
+        try {
+            await AsyncStorage.removeItem(USER_STORAGE_KEY);
+        } catch (error) {
+            console.error('Error clearing user:', error);
+        }
+    },
+};
+
 // Export all as db object (same interface as before)
 export const db = {
     stores,
@@ -438,7 +517,9 @@ export const db = {
     attendance,
     leaveRequests,
     salaryRecords,
+    deviceRequests,
     settings,
+    user,
 };
 
 export default db;
