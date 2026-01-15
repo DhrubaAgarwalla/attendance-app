@@ -8,6 +8,7 @@ import { Colors } from '../constants/theme';
 import SuperAdminDashboard from '../screens/superadmin/Dashboard';
 import StoresScreen from '../screens/superadmin/StoresScreen';
 import AdminsScreen from '../screens/superadmin/AdminsScreen';
+import StaffScreen from '../screens/superadmin/StaffScreen';
 import GlobalLeavesScreen from '../screens/superadmin/GlobalLeavesScreen';
 import ReportsScreen from '../screens/superadmin/ReportsScreen';
 
@@ -31,6 +32,9 @@ const SuperAdminNavigator = () => {
                             break;
                         case 'Admins':
                             iconName = focused ? 'people' : 'people-outline';
+                            break;
+                        case 'Staff':
+                            iconName = focused ? 'person-circle' : 'person-circle-outline';
                             break;
                         case 'Leaves':
                             iconName = focused ? 'calendar' : 'calendar-outline';
@@ -62,6 +66,7 @@ const SuperAdminNavigator = () => {
             <Tab.Screen name="Dashboard" component={SuperAdminDashboard} />
             <Tab.Screen name="Stores" component={StoresScreen} />
             <Tab.Screen name="Admins" component={AdminsScreen} />
+            <Tab.Screen name="Staff" component={StaffScreen} />
             <Tab.Screen name="Leaves" component={GlobalLeavesScreen} />
             <Tab.Screen name="Reports" component={ReportsScreen} />
         </Tab.Navigator>

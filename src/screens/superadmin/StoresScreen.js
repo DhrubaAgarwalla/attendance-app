@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { db } from '../../services/database';
 import { Card, TopBar, Button, Input, StatusBadge, EmptyState, Loading } from '../../components/common';
 import { Colors, Spacing, Typography, BorderRadius } from '../../constants/theme';
@@ -12,6 +13,7 @@ const StoresScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [fetchingLocation, setFetchingLocation] = useState(false);
     const [newStore, setNewStore] = useState({
         name: '',
         address: '',
@@ -80,6 +82,34 @@ const StoresScreen = () => {
             Alert.alert('Success', 'Store added successfully');
         } catch (error) {
             Alert.alert('Error', 'Failed to add store');
+        }
+    };
+
+    const fetchCurrentLocation = async () => {
+        setFetchingLocation(true);
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Location permission is required to fetch coordinates');
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+            });
+
+            setNewStore({
+                ...newStore,
+                lat: location.coords.latitude.toFixed(6),
+                lng: location.coords.longitude.toFixed(6),
+            });
+
+            Alert.alert('Success', 'Location fetched successfully!');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to get location. Please try again.');
+            console.error('Location error:', error);
+        } finally {
+            setFetchingLocation(false);
         }
     };
 
@@ -256,6 +286,21 @@ const StoresScreen = () => {
                             </View>
                         </View>
 
+                        <TouchableOpacity
+                            style={styles.fetchLocationBtn}
+                            onPress={fetchCurrentLocation}
+                            disabled={fetchingLocation}
+                        >
+                            {fetchingLocation ? (
+                                <ActivityIndicator size="small" color={Colors.primary} />
+                            ) : (
+                                <Ionicons name="locate" size={20} color={Colors.primary} />
+                            )}
+                            <Text style={styles.fetchLocationText}>
+                                {fetchingLocation ? 'Fetching...' : 'Use Current Location'}
+                            </Text>
+                        </TouchableOpacity>
+
                         <Input
                             label="Location Radius (meters)"
                             value={newStore.radius}
@@ -412,6 +457,20 @@ const styles = StyleSheet.create({
     },
     modalBtn: {
         flex: 1,
+    },
+    fetchLocationBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: Spacing.sm,
+        backgroundColor: Colors.primaryContainer,
+        padding: Spacing.sm,
+        borderRadius: BorderRadius.md,
+        marginBottom: Spacing.sm,
+    },
+    fetchLocationText: {
+        ...Typography.labelMedium,
+        color: Colors.primary,
     },
 });
 
