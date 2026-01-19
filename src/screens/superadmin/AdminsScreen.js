@@ -13,6 +13,9 @@ const AdminsScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editAdmin, setEditAdmin] = useState(null);
+    const [editStores, setEditStores] = useState([]);
     const [newAdmin, setNewAdmin] = useState({
         name: '',
         phone: '',
@@ -124,6 +127,32 @@ const AdminsScreen = () => {
             .join(', ');
     };
 
+    const handleEditAdmin = (admin) => {
+        setEditAdmin(admin);
+        setEditStores(admin.assignedStoreIds || []);
+        setShowEditModal(true);
+    };
+
+    const toggleEditStoreSelection = (storeId) => {
+        const selected = editStores.includes(storeId)
+            ? editStores.filter(id => id !== storeId)
+            : [...editStores, storeId];
+        setEditStores(selected);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editAdmin) return;
+        try {
+            await db.admins.update(editAdmin.id, { assignedStoreIds: editStores });
+            setAdmins(admins.map(a => a.id === editAdmin.id ? { ...a, assignedStoreIds: editStores } : a));
+            setShowEditModal(false);
+            setEditAdmin(null);
+            Alert.alert('Success', 'Admin stores updated');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update admin');
+        }
+    };
+
     if (loading) {
         return <Loading fullScreen text="Loading admins..." />;
     }
@@ -218,7 +247,7 @@ const AdminsScreen = () => {
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.actionBtn}>
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => handleEditAdmin(admin)}>
                                     <Ionicons name="create-outline" size={20} color={Colors.primary} />
                                     <Text style={[styles.actionText, { color: Colors.primary }]}>
                                         Edit Stores
@@ -288,6 +317,44 @@ const AdminsScreen = () => {
                                 onPress={handleAddAdmin}
                                 style={styles.modalBtn}
                             />
+                        </View>
+                    </Card>
+                )}
+
+                {/* Edit Admin Modal */}
+                {showEditModal && editAdmin && (
+                    <Card variant="elevated" style={styles.modal}>
+                        <Text style={styles.modalTitle}>Edit Stores for {editAdmin.name}</Text>
+
+                        <Text style={styles.storeSelectLabel}>Select Stores</Text>
+                        <View style={styles.storesList}>
+                            {stores.map((store) => (
+                                <TouchableOpacity
+                                    key={store.id}
+                                    style={[
+                                        styles.storeChip,
+                                        editStores.includes(store.id) && styles.storeChipSelected,
+                                    ]}
+                                    onPress={() => toggleEditStoreSelection(store.id)}
+                                >
+                                    <Ionicons
+                                        name={editStores.includes(store.id) ? 'checkmark-circle' : 'add-circle-outline'}
+                                        size={18}
+                                        color={editStores.includes(store.id) ? Colors.onPrimary : Colors.outline}
+                                    />
+                                    <Text style={[
+                                        styles.storeChipText,
+                                        editStores.includes(store.id) && styles.storeChipTextSelected,
+                                    ]}>
+                                        {store.name}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <View style={styles.modalActions}>
+                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
+                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
                         </View>
                     </Card>
                 )}

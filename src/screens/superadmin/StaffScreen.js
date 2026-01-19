@@ -17,6 +17,8 @@ const StaffScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editStaff, setEditStaff] = useState(null);
     const [selectedStoreFilter, setSelectedStoreFilter] = useState('all');
     const [newStaff, setNewStaff] = useState({
         name: '', phone: '', role: '', monthlySalary: '', storeId: '', photo: null,
@@ -118,6 +120,36 @@ const StaffScreen = () => {
         );
     };
 
+    const handleEditStaff = (staffMember) => {
+        setEditStaff({
+            ...staffMember,
+            monthlySalary: String(staffMember.monthlySalary || ''),
+            customStartTime: staffMember.customStartTime || '',
+            customEndTime: staffMember.customEndTime || '',
+        });
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editStaff) return;
+        try {
+            const updates = {
+                name: editStaff.name,
+                role: editStaff.role,
+                monthlySalary: parseFloat(editStaff.monthlySalary) || 0,
+                customStartTime: editStaff.customStartTime || null,
+                customEndTime: editStaff.customEndTime || null,
+            };
+            await db.staff.update(editStaff.id, updates);
+            setStaff(staff.map(s => s.id === editStaff.id ? { ...s, ...updates } : s));
+            setShowEditModal(false);
+            setEditStaff(null);
+            Alert.alert('Success', 'Staff updated');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update staff');
+        }
+    };
+
     if (loading) return <Loading fullScreen text="Loading staff..." />;
 
     const filteredStaff = selectedStoreFilter === 'all'
@@ -179,6 +211,10 @@ const StaffScreen = () => {
                                 </View>
                             </View>
                             <View style={styles.staffActions}>
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => handleEditStaff(s)}>
+                                    <Ionicons name="create-outline" size={18} color={Colors.secondary} />
+                                    <Text style={[styles.actionText, { color: Colors.secondary }]}>Edit</Text>
+                                </TouchableOpacity>
                                 <TouchableOpacity style={styles.actionBtn} onPress={() => handleChangeStore(s)}>
                                     <Ionicons name="swap-horizontal" size={18} color={Colors.primary} />
                                     <Text style={[styles.actionText, { color: Colors.primary }]}>Move</Text>
@@ -234,6 +270,56 @@ const StaffScreen = () => {
                         <View style={styles.modalActions}>
                             <Button title="Cancel" variant="outlined" onPress={() => setShowAddModal(false)} style={styles.modalBtn} />
                             <Button title="Add Staff" onPress={handleAddStaff} style={styles.modalBtn} />
+                        </View>
+                    </Card>
+                )}
+
+                {/* Edit Staff Modal */}
+                {showEditModal && editStaff && (
+                    <Card variant="elevated" style={styles.modal}>
+                        <Text style={styles.modalTitle}>Edit Staff - {editStaff.name}</Text>
+
+                        <Input
+                            label="Name"
+                            value={editStaff.name}
+                            onChangeText={(t) => setEditStaff({ ...editStaff, name: t })}
+                        />
+                        <Input
+                            label="Role"
+                            value={editStaff.role}
+                            onChangeText={(t) => setEditStaff({ ...editStaff, role: t })}
+                            placeholder="e.g., Sales, Manager"
+                        />
+                        <Input
+                            label="Monthly Salary (₹)"
+                            value={editStaff.monthlySalary}
+                            onChangeText={(t) => setEditStaff({ ...editStaff, monthlySalary: t })}
+                            keyboardType="number-pad"
+                        />
+
+                        <Text style={styles.inputLabel}>Custom Work Hours (Optional)</Text>
+                        <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                            <View style={{ flex: 1 }}>
+                                <Input
+                                    label="Start Time"
+                                    value={editStaff.customStartTime}
+                                    onChangeText={(t) => setEditStaff({ ...editStaff, customStartTime: t })}
+                                    placeholder="e.g., 10:00"
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Input
+                                    label="End Time"
+                                    value={editStaff.customEndTime}
+                                    onChangeText={(t) => setEditStaff({ ...editStaff, customEndTime: t })}
+                                    placeholder="e.g., 19:00"
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.modalActions}>
+                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
+                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
                         </View>
                     </Card>
                 )}

@@ -9,6 +9,7 @@ import SuperAdminDashboard from '../screens/superadmin/Dashboard';
 import StoresScreen from '../screens/superadmin/StoresScreen';
 import AdminsScreen from '../screens/superadmin/AdminsScreen';
 import StaffScreen from '../screens/superadmin/StaffScreen';
+import AttendanceScreen from '../screens/superadmin/AttendanceScreen';
 import GlobalLeavesScreen from '../screens/superadmin/GlobalLeavesScreen';
 import ReportsScreen from '../screens/superadmin/ReportsScreen';
 
@@ -39,6 +40,9 @@ const SuperAdminNavigator = () => {
                         case 'Leaves':
                             iconName = focused ? 'calendar' : 'calendar-outline';
                             break;
+                        case 'Attendance':
+                            iconName = focused ? 'clipboard' : 'clipboard-outline';
+                            break;
                         case 'Reports':
                             iconName = focused ? 'bar-chart' : 'bar-chart-outline';
                             break;
@@ -67,6 +71,7 @@ const SuperAdminNavigator = () => {
             <Tab.Screen name="Stores" component={StoresScreen} />
             <Tab.Screen name="Admins" component={AdminsScreen} />
             <Tab.Screen name="Staff" component={StaffScreen} />
+            <Tab.Screen name="Attendance" component={AttendanceScreen} />
             <Tab.Screen name="Leaves" component={GlobalLeavesScreen} />
             <Tab.Screen name="Reports" component={ReportsScreen} />
         </Tab.Navigator>

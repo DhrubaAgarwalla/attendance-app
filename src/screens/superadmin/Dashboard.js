@@ -208,27 +208,6 @@ const Dashboard = () => {
                         <Text style={styles.emptyText}>No leave requests yet</Text>
                     </Card>
                 )}
-
-                {/* Quick Actions */}
-                <Text style={styles.sectionTitle}>Quick Actions</Text>
-                <View style={styles.actionsGrid}>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="add-circle" size={24} color={Colors.primary} />
-                        <Text style={styles.actionText}>Add Store</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="person-add" size={24} color={Colors.adminAccent} />
-                        <Text style={styles.actionText}>Add Admin</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="document-text" size={24} color={Colors.success} />
-                        <Text style={styles.actionText}>Export Report</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="settings" size={24} color={Colors.secondary} />
-                        <Text style={styles.actionText}>Settings</Text>
-                    </TouchableOpacity>
-                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -373,23 +352,6 @@ const styles = StyleSheet.create({
         ...Typography.bodyMedium,
         color: Colors.onSurfaceVariant,
         marginTop: Spacing.sm,
-    },
-    actionsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: Spacing.sm,
-    },
-    actionButton: {
-        width: '48%',
-        backgroundColor: Colors.surfaceContainerLow,
-        borderRadius: BorderRadius.lg,
-        padding: Spacing.md,
-        alignItems: 'center',
-        gap: Spacing.sm,
-    },
-    actionText: {
-        ...Typography.labelMedium,
-        color: Colors.onSurface,
     },
 });
 

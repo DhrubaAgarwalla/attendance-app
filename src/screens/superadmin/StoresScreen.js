@@ -13,6 +13,11 @@ const StoresScreen = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showHolidayModal, setShowHolidayModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedStore, setSelectedStore] = useState(null);
+    const [editStore, setEditStore] = useState(null);
+    const [newHolidayDate, setNewHolidayDate] = useState('');
     const [fetchingLocation, setFetchingLocation] = useState(false);
     const [newStore, setNewStore] = useState({
         name: '',
@@ -135,6 +140,91 @@ const StoresScreen = () => {
         }
     };
 
+    const handleOpenHolidays = (store) => {
+        setSelectedStore(store);
+        setNewHolidayDate('');
+        setShowHolidayModal(true);
+    };
+
+    const handleAddHoliday = async () => {
+        if (!newHolidayDate || !selectedStore) return;
+
+        // Validate date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(newHolidayDate)) {
+            Alert.alert('Invalid Date', 'Please use format YYYY-MM-DD (e.g., 2026-01-26)');
+            return;
+        }
+
+        try {
+            const currentHolidays = selectedStore.holidayDates || [];
+            if (currentHolidays.includes(newHolidayDate)) {
+                Alert.alert('Already Added', 'This date is already a holiday');
+                return;
+            }
+
+            const updatedHolidays = [...currentHolidays, newHolidayDate].sort();
+            await db.stores.update(selectedStore.id, { holidayDates: updatedHolidays });
+
+            setStores(stores.map(s =>
+                s.id === selectedStore.id ? { ...s, holidayDates: updatedHolidays } : s
+            ));
+            setSelectedStore({ ...selectedStore, holidayDates: updatedHolidays });
+            setNewHolidayDate('');
+            Alert.alert('Success', 'Holiday added');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to add holiday');
+        }
+    };
+
+    const handleRemoveHoliday = async (dateToRemove) => {
+        if (!selectedStore) return;
+
+        try {
+            const updatedHolidays = (selectedStore.holidayDates || []).filter(d => d !== dateToRemove);
+            await db.stores.update(selectedStore.id, { holidayDates: updatedHolidays });
+
+            setStores(stores.map(s =>
+                s.id === selectedStore.id ? { ...s, holidayDates: updatedHolidays } : s
+            ));
+            setSelectedStore({ ...selectedStore, holidayDates: updatedHolidays });
+        } catch (error) {
+            Alert.alert('Error', 'Failed to remove holiday');
+        }
+    };
+
+    const handleEditStore = (store) => {
+        setEditStore({
+            ...store,
+            lat: String(store.lat || ''),
+            lng: String(store.lng || ''),
+            radius: String(store.radius || '100'),
+        });
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editStore) return;
+        try {
+            const updates = {
+                name: editStore.name,
+                address: editStore.address,
+                lat: parseFloat(editStore.lat) || 0,
+                lng: parseFloat(editStore.lng) || 0,
+                radius: parseInt(editStore.radius) || 100,
+                defaultStartTime: editStore.defaultStartTime,
+                defaultEndTime: editStore.defaultEndTime,
+            };
+            await db.stores.update(editStore.id, updates);
+            setStores(stores.map(s => s.id === editStore.id ? { ...s, ...updates } : s));
+            setShowEditModal(false);
+            setEditStore(null);
+            Alert.alert('Success', 'Store updated');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to update store');
+        }
+    };
+
     if (loading) {
         return <Loading fullScreen text="Loading stores..." />;
     }
@@ -233,10 +323,15 @@ const StoresScreen = () => {
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.actionBtn}>
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => handleEditStore(store)}>
+                                    <Ionicons name="create-outline" size={20} color={Colors.warning} />
+                                    <Text style={[styles.actionText, { color: Colors.warning }]}>Edit</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => handleOpenHolidays(store)}>
                                     <Ionicons name="calendar-outline" size={20} color={Colors.secondary} />
                                     <Text style={[styles.actionText, { color: Colors.secondary }]}>
-                                        Holidays
+                                        Holidays ({store.holidayDates?.length || 0})
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -340,6 +435,118 @@ const StoresScreen = () => {
                                 onPress={handleAddStore}
                                 style={styles.modalBtn}
                             />
+                        </View>
+                    </Card>
+                )}
+
+                {/* Holiday Management Modal */}
+                {showHolidayModal && selectedStore && (
+                    <Card variant="elevated" style={styles.modal}>
+                        <Text style={styles.modalTitle}>Holidays - {selectedStore.name}</Text>
+
+                        <View style={styles.addHolidayRow}>
+                            <View style={{ flex: 1 }}>
+                                <Input
+                                    label="Add Holiday (YYYY-MM-DD)"
+                                    value={newHolidayDate}
+                                    onChangeText={setNewHolidayDate}
+                                    placeholder="2026-01-26"
+                                />
+                            </View>
+                            <TouchableOpacity style={styles.addHolidayBtn} onPress={handleAddHoliday}>
+                                <Ionicons name="add-circle" size={36} color={Colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={styles.holidayListTitle}>
+                            Current Holidays ({selectedStore.holidayDates?.length || 0})
+                        </Text>
+
+                        {selectedStore.holidayDates?.length > 0 ? (
+                            <ScrollView style={styles.holidayList} nestedScrollEnabled>
+                                {selectedStore.holidayDates.map((date) => (
+                                    <View key={date} style={styles.holidayItem}>
+                                        <Ionicons name="calendar" size={18} color={Colors.secondary} />
+                                        <Text style={styles.holidayDate}>{date}</Text>
+                                        <TouchableOpacity onPress={() => handleRemoveHoliday(date)}>
+                                            <Ionicons name="close-circle" size={22} color={Colors.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <Text style={styles.noHolidays}>No holidays set</Text>
+                        )}
+
+                        <Button
+                            title="Close"
+                            variant="outlined"
+                            onPress={() => setShowHolidayModal(false)}
+                            style={{ marginTop: Spacing.md }}
+                        />
+                    </Card>
+                )}
+
+                {/* Edit Store Modal */}
+                {showEditModal && editStore && (
+                    <Card variant="elevated" style={styles.modal}>
+                        <Text style={styles.modalTitle}>Edit Store</Text>
+
+                        <Input
+                            label="Store Name"
+                            value={editStore.name}
+                            onChangeText={(text) => setEditStore({ ...editStore, name: text })}
+                        />
+                        <Input
+                            label="Address"
+                            value={editStore.address}
+                            onChangeText={(text) => setEditStore({ ...editStore, address: text })}
+                            multiline
+                        />
+                        <View style={styles.rowInputs}>
+                            <View style={styles.halfInput}>
+                                <Input
+                                    label="Latitude"
+                                    value={editStore.lat}
+                                    onChangeText={(text) => setEditStore({ ...editStore, lat: text })}
+                                    keyboardType="decimal-pad"
+                                />
+                            </View>
+                            <View style={styles.halfInput}>
+                                <Input
+                                    label="Longitude"
+                                    value={editStore.lng}
+                                    onChangeText={(text) => setEditStore({ ...editStore, lng: text })}
+                                    keyboardType="decimal-pad"
+                                />
+                            </View>
+                        </View>
+                        <Input
+                            label="Radius (meters)"
+                            value={editStore.radius}
+                            onChangeText={(text) => setEditStore({ ...editStore, radius: text })}
+                            keyboardType="number-pad"
+                        />
+                        <View style={styles.rowInputs}>
+                            <View style={styles.halfInput}>
+                                <Input
+                                    label="Start Time"
+                                    value={editStore.defaultStartTime}
+                                    onChangeText={(text) => setEditStore({ ...editStore, defaultStartTime: text })}
+                                />
+                            </View>
+                            <View style={styles.halfInput}>
+                                <Input
+                                    label="End Time"
+                                    value={editStore.defaultEndTime}
+                                    onChangeText={(text) => setEditStore({ ...editStore, defaultEndTime: text })}
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.modalActions}>
+                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
+                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
                         </View>
                     </Card>
                 )}
@@ -471,6 +678,44 @@ const styles = StyleSheet.create({
     fetchLocationText: {
         ...Typography.labelMedium,
         color: Colors.primary,
+    },
+    addHolidayRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: Spacing.sm,
+    },
+    addHolidayBtn: {
+        padding: Spacing.xs,
+        marginBottom: Spacing.sm,
+    },
+    holidayListTitle: {
+        ...Typography.labelMedium,
+        color: Colors.onSurfaceVariant,
+        marginTop: Spacing.md,
+        marginBottom: Spacing.sm,
+    },
+    holidayList: {
+        maxHeight: 200,
+    },
+    holidayItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+        backgroundColor: Colors.surfaceVariant,
+        padding: Spacing.sm,
+        borderRadius: BorderRadius.sm,
+        marginBottom: Spacing.xs,
+    },
+    holidayDate: {
+        ...Typography.bodyMedium,
+        color: Colors.onSurface,
+        flex: 1,
+    },
+    noHolidays: {
+        ...Typography.bodySmall,
+        color: Colors.outline,
+        textAlign: 'center',
+        padding: Spacing.md,
     },
 });
 
