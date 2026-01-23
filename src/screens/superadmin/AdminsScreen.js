@@ -254,6 +254,41 @@ const AdminsScreen = () => {
                                     </Text>
                                 </TouchableOpacity>
                             </View>
+
+                            {/* Inline Edit Form */}
+                            {editAdmin?.id === admin.id && (
+                                <View style={styles.inlineEditForm}>
+                                    <View style={styles.inlineEditHeader}>
+                                        <Text style={styles.inlineEditTitle}>Edit Stores for {editAdmin.name}</Text>
+                                        <TouchableOpacity onPress={() => setShowEditModal(false)}>
+                                            <Ionicons name="close-circle" size={24} color={Colors.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={styles.storeSelectLabel}>Select Stores</Text>
+                                    <View style={styles.storesList}>
+                                        {stores.map((store) => (
+                                            <TouchableOpacity
+                                                key={store.id}
+                                                style={[styles.storeChip, editStores.includes(store.id) && styles.storeChipSelected]}
+                                                onPress={() => toggleEditStoreSelection(store.id)}
+                                            >
+                                                <Ionicons
+                                                    name={editStores.includes(store.id) ? 'checkmark-circle' : 'add-circle-outline'}
+                                                    size={18}
+                                                    color={editStores.includes(store.id) ? Colors.onPrimary : Colors.outline}
+                                                />
+                                                <Text style={[styles.storeChipText, editStores.includes(store.id) && styles.storeChipTextSelected]}>
+                                                    {store.name}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                    <View style={styles.modalActions}>
+                                        <Button title="Cancel" variant="outlined" onPress={() => setEditAdmin(null)} style={styles.modalBtn} />
+                                        <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
+                                    </View>
+                                </View>
+                            )}
                         </Card>
                     ))
                 )}
@@ -317,44 +352,6 @@ const AdminsScreen = () => {
                                 onPress={handleAddAdmin}
                                 style={styles.modalBtn}
                             />
-                        </View>
-                    </Card>
-                )}
-
-                {/* Edit Admin Modal */}
-                {showEditModal && editAdmin && (
-                    <Card variant="elevated" style={styles.modal}>
-                        <Text style={styles.modalTitle}>Edit Stores for {editAdmin.name}</Text>
-
-                        <Text style={styles.storeSelectLabel}>Select Stores</Text>
-                        <View style={styles.storesList}>
-                            {stores.map((store) => (
-                                <TouchableOpacity
-                                    key={store.id}
-                                    style={[
-                                        styles.storeChip,
-                                        editStores.includes(store.id) && styles.storeChipSelected,
-                                    ]}
-                                    onPress={() => toggleEditStoreSelection(store.id)}
-                                >
-                                    <Ionicons
-                                        name={editStores.includes(store.id) ? 'checkmark-circle' : 'add-circle-outline'}
-                                        size={18}
-                                        color={editStores.includes(store.id) ? Colors.onPrimary : Colors.outline}
-                                    />
-                                    <Text style={[
-                                        styles.storeChipText,
-                                        editStores.includes(store.id) && styles.storeChipTextSelected,
-                                    ]}>
-                                        {store.name}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        <View style={styles.modalActions}>
-                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
-                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
                         </View>
                     </Card>
                 )}
@@ -479,6 +476,28 @@ const styles = StyleSheet.create({
     },
     modalBtn: {
         flex: 1,
+    },
+    inlineEditForm: {
+        marginTop: Spacing.md,
+        paddingTop: Spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: Colors.primary,
+        backgroundColor: Colors.surfaceContainerLow,
+        marginHorizontal: -Spacing.md,
+        marginBottom: -Spacing.md,
+        padding: Spacing.md,
+        borderBottomLeftRadius: BorderRadius.lg,
+        borderBottomRightRadius: BorderRadius.lg,
+    },
+    inlineEditHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: Spacing.sm,
+    },
+    inlineEditTitle: {
+        ...Typography.titleMedium,
+        color: Colors.primary,
     },
 });
 

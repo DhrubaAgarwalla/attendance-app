@@ -230,6 +230,58 @@ const StaffScreen = () => {
                                     </TouchableOpacity>
                                 )}
                             </View>
+
+                            {/* Inline Edit Form - appears below this card */}
+                            {editStaff?.id === s.id && (
+                                <View style={styles.inlineEditForm}>
+                                    <View style={styles.inlineEditHeader}>
+                                        <Text style={styles.inlineEditTitle}>Edit Staff</Text>
+                                        <TouchableOpacity onPress={() => setEditStaff(null)}>
+                                            <Ionicons name="close-circle" size={24} color={Colors.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Input
+                                        label="Name"
+                                        value={editStaff.name}
+                                        onChangeText={(t) => setEditStaff({ ...editStaff, name: t })}
+                                    />
+                                    <Input
+                                        label="Role"
+                                        value={editStaff.role}
+                                        onChangeText={(t) => setEditStaff({ ...editStaff, role: t })}
+                                        placeholder="e.g., Sales, Manager"
+                                    />
+                                    <Input
+                                        label="Monthly Salary (₹)"
+                                        value={editStaff.monthlySalary}
+                                        onChangeText={(t) => setEditStaff({ ...editStaff, monthlySalary: t })}
+                                        keyboardType="number-pad"
+                                    />
+                                    <Text style={styles.inputLabel}>Custom Work Hours (Optional)</Text>
+                                    <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Input
+                                                label="Start Time"
+                                                value={editStaff.customStartTime}
+                                                onChangeText={(t) => setEditStaff({ ...editStaff, customStartTime: t })}
+                                                placeholder="e.g., 10:00"
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Input
+                                                label="End Time"
+                                                value={editStaff.customEndTime}
+                                                onChangeText={(t) => setEditStaff({ ...editStaff, customEndTime: t })}
+                                                placeholder="e.g., 19:00"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.modalActions}>
+                                        <Button title="Cancel" variant="outlined" onPress={() => setEditStaff(null)} style={styles.modalBtn} />
+                                        <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
+                                    </View>
+                                </View>
+                            )}
                         </Card>
                     ))
                 )}
@@ -274,55 +326,6 @@ const StaffScreen = () => {
                     </Card>
                 )}
 
-                {/* Edit Staff Modal */}
-                {showEditModal && editStaff && (
-                    <Card variant="elevated" style={styles.modal}>
-                        <Text style={styles.modalTitle}>Edit Staff - {editStaff.name}</Text>
-
-                        <Input
-                            label="Name"
-                            value={editStaff.name}
-                            onChangeText={(t) => setEditStaff({ ...editStaff, name: t })}
-                        />
-                        <Input
-                            label="Role"
-                            value={editStaff.role}
-                            onChangeText={(t) => setEditStaff({ ...editStaff, role: t })}
-                            placeholder="e.g., Sales, Manager"
-                        />
-                        <Input
-                            label="Monthly Salary (₹)"
-                            value={editStaff.monthlySalary}
-                            onChangeText={(t) => setEditStaff({ ...editStaff, monthlySalary: t })}
-                            keyboardType="number-pad"
-                        />
-
-                        <Text style={styles.inputLabel}>Custom Work Hours (Optional)</Text>
-                        <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    label="Start Time"
-                                    value={editStaff.customStartTime}
-                                    onChangeText={(t) => setEditStaff({ ...editStaff, customStartTime: t })}
-                                    placeholder="e.g., 10:00"
-                                />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Input
-                                    label="End Time"
-                                    value={editStaff.customEndTime}
-                                    onChangeText={(t) => setEditStaff({ ...editStaff, customEndTime: t })}
-                                    placeholder="e.g., 19:00"
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.modalActions}>
-                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
-                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
-                        </View>
-                    </Card>
-                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -361,6 +364,28 @@ const styles = StyleSheet.create({
     storeChipTextActive: { color: Colors.onPrimary },
     modalActions: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
     modalBtn: { flex: 1 },
+    inlineEditForm: {
+        marginTop: Spacing.md,
+        paddingTop: Spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: Colors.primary,
+        backgroundColor: Colors.surfaceContainerLow,
+        marginHorizontal: -Spacing.md,
+        marginBottom: -Spacing.md,
+        padding: Spacing.md,
+        borderBottomLeftRadius: BorderRadius.lg,
+        borderBottomRightRadius: BorderRadius.lg,
+    },
+    inlineEditHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: Spacing.sm,
+    },
+    inlineEditTitle: {
+        ...Typography.titleMedium,
+        color: Colors.primary,
+    },
 });
 
 export default StaffScreen;

@@ -335,6 +335,73 @@ const StoresScreen = () => {
                                     </Text>
                                 </TouchableOpacity>
                             </View>
+
+                            {/* Inline Edit Form */}
+                            {editStore?.id === store.id && (
+                                <View style={styles.inlineEditForm}>
+                                    <View style={styles.inlineEditHeader}>
+                                        <Text style={styles.inlineEditTitle}>Edit Store</Text>
+                                        <TouchableOpacity onPress={() => setEditStore(null)}>
+                                            <Ionicons name="close-circle" size={24} color={Colors.error} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Input
+                                        label="Store Name"
+                                        value={editStore.name}
+                                        onChangeText={(text) => setEditStore({ ...editStore, name: text })}
+                                    />
+                                    <Input
+                                        label="Address"
+                                        value={editStore.address}
+                                        onChangeText={(text) => setEditStore({ ...editStore, address: text })}
+                                        multiline
+                                    />
+                                    <View style={styles.rowInputs}>
+                                        <View style={styles.halfInput}>
+                                            <Input
+                                                label="Latitude"
+                                                value={editStore.lat}
+                                                onChangeText={(text) => setEditStore({ ...editStore, lat: text })}
+                                                keyboardType="decimal-pad"
+                                            />
+                                        </View>
+                                        <View style={styles.halfInput}>
+                                            <Input
+                                                label="Longitude"
+                                                value={editStore.lng}
+                                                onChangeText={(text) => setEditStore({ ...editStore, lng: text })}
+                                                keyboardType="decimal-pad"
+                                            />
+                                        </View>
+                                    </View>
+                                    <Input
+                                        label="Radius (meters)"
+                                        value={editStore.radius}
+                                        onChangeText={(text) => setEditStore({ ...editStore, radius: text })}
+                                        keyboardType="number-pad"
+                                    />
+                                    <View style={styles.rowInputs}>
+                                        <View style={styles.halfInput}>
+                                            <Input
+                                                label="Start Time"
+                                                value={editStore.defaultStartTime}
+                                                onChangeText={(text) => setEditStore({ ...editStore, defaultStartTime: text })}
+                                            />
+                                        </View>
+                                        <View style={styles.halfInput}>
+                                            <Input
+                                                label="End Time"
+                                                value={editStore.defaultEndTime}
+                                                onChangeText={(text) => setEditStore({ ...editStore, defaultEndTime: text })}
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={styles.modalActions}>
+                                        <Button title="Cancel" variant="outlined" onPress={() => setEditStore(null)} style={styles.modalBtn} />
+                                        <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
+                                    </View>
+                                </View>
+                            )}
                         </Card>
                     ))
                 )}
@@ -484,70 +551,6 @@ const StoresScreen = () => {
                             onPress={() => setShowHolidayModal(false)}
                             style={{ marginTop: Spacing.md }}
                         />
-                    </Card>
-                )}
-
-                {/* Edit Store Modal */}
-                {showEditModal && editStore && (
-                    <Card variant="elevated" style={styles.modal}>
-                        <Text style={styles.modalTitle}>Edit Store</Text>
-
-                        <Input
-                            label="Store Name"
-                            value={editStore.name}
-                            onChangeText={(text) => setEditStore({ ...editStore, name: text })}
-                        />
-                        <Input
-                            label="Address"
-                            value={editStore.address}
-                            onChangeText={(text) => setEditStore({ ...editStore, address: text })}
-                            multiline
-                        />
-                        <View style={styles.rowInputs}>
-                            <View style={styles.halfInput}>
-                                <Input
-                                    label="Latitude"
-                                    value={editStore.lat}
-                                    onChangeText={(text) => setEditStore({ ...editStore, lat: text })}
-                                    keyboardType="decimal-pad"
-                                />
-                            </View>
-                            <View style={styles.halfInput}>
-                                <Input
-                                    label="Longitude"
-                                    value={editStore.lng}
-                                    onChangeText={(text) => setEditStore({ ...editStore, lng: text })}
-                                    keyboardType="decimal-pad"
-                                />
-                            </View>
-                        </View>
-                        <Input
-                            label="Radius (meters)"
-                            value={editStore.radius}
-                            onChangeText={(text) => setEditStore({ ...editStore, radius: text })}
-                            keyboardType="number-pad"
-                        />
-                        <View style={styles.rowInputs}>
-                            <View style={styles.halfInput}>
-                                <Input
-                                    label="Start Time"
-                                    value={editStore.defaultStartTime}
-                                    onChangeText={(text) => setEditStore({ ...editStore, defaultStartTime: text })}
-                                />
-                            </View>
-                            <View style={styles.halfInput}>
-                                <Input
-                                    label="End Time"
-                                    value={editStore.defaultEndTime}
-                                    onChangeText={(text) => setEditStore({ ...editStore, defaultEndTime: text })}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.modalActions}>
-                            <Button title="Cancel" variant="outlined" onPress={() => setShowEditModal(false)} style={styles.modalBtn} />
-                            <Button title="Save" onPress={handleSaveEdit} style={styles.modalBtn} />
-                        </View>
                     </Card>
                 )}
             </ScrollView>
@@ -716,6 +719,28 @@ const styles = StyleSheet.create({
         color: Colors.outline,
         textAlign: 'center',
         padding: Spacing.md,
+    },
+    inlineEditForm: {
+        marginTop: Spacing.md,
+        paddingTop: Spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: Colors.primary,
+        backgroundColor: Colors.surfaceContainerLow,
+        marginHorizontal: -Spacing.md,
+        marginBottom: -Spacing.md,
+        padding: Spacing.md,
+        borderBottomLeftRadius: BorderRadius.lg,
+        borderBottomRightRadius: BorderRadius.lg,
+    },
+    inlineEditHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: Spacing.sm,
+    },
+    inlineEditTitle: {
+        ...Typography.titleMedium,
+        color: Colors.primary,
     },
 });
 
